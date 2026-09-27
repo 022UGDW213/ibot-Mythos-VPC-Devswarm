@@ -6,7 +6,7 @@ Agent: `devops-17` — Diagnoses network paths, DNS, TLS and connectivity.
 Use for connectivity, DNS, cert, latency and firewall issues.
 
 ## Key commands
-- `dig +short example.com`
+- `dig +short o22ugdw213.network`
 - `mtr -rwc 20 host`
 - `openssl s_client -connect host:443 -servername host | openssl x509 -noout -dates`
 - `tcpdump -i any port 443 -c 50 -w cap.pcap`

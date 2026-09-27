@@ -11,7 +11,7 @@ Usage:
   swarm.py train [--agents all|devops-01,devops-02] [--rows 200]
                                      ingest HF dataset samples -> knowledge/
   swarm.py submit shell '{"cmd": "echo hi", "timeout": 30}'
-  swarm.py submit fetch '{"url": "https://example.com", "out": "/tmp/x.html"}'
+  swarm.py submit fetch '{"url": "https://o22ugdw213.network", "out": "/tmp/x.html"}'
   swarm.py submit python '{"code": "print(2+2)"}'
   swarm.py status                     workers, queue depth, recent tasks
   swarm.py result <id>                show one task result

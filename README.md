@@ -105,7 +105,7 @@ The client is `nvidia/client_example.py`: a stdlib-only `urllib` POST to the Ope
 - Default model: `moonshotai/kimi-k3` (override with `NVIDIA_MODEL`)
 - Auth: `Authorization: Bearer $NVIDIA_API_KEY` — never commit the key
 
-What is verified **now** (2026-09-26): the endpoint is live and auth-gated — a `POST` with no `Authorization` header returns **HTTP 401**, body `Header of type 'authorization' was missing`, in 0.31 s. A `GET`-style reachability check is included in [How these numbers were measured](#how-these-numbers-were-measured).
+What is verified **now** (re-measured 2026-09-27): the endpoint is live and auth-gated — a `POST` with no `Authorization` header returns **HTTP 401**, body `Header of type 'authorization' was missing`. Only the status and body are quoted: the wall time swings between runs (0.31 s on 2026-09-26, 0.68 s on 2026-09-27), so it is not a stable figure. The check is in [How these numbers were measured](#how-these-numbers-were-measured).
 
 What is **not** verified now: the free-tier `HTTP 200` completion recorded in `nvidia/MODELS.md` on 2026-09-17. `NVIDIA_API_KEY` is not set on this workstation, so that call cannot be replayed here — treat it as a dated observation, not a current result. `nvidia/nemotron-3-ultra-550b-a55b` is referenced in local config and was never live-tested.
 
@@ -142,7 +142,7 @@ stats();
 // }
 ```
 
-Note: `index.js` declares `engines: { node: ">=23.4" }` for `node:sqlite`. It runs on Node v22.23.2 (this workstation) with an `ExperimentalWarning: SQLite is an experimental feature` on stderr.
+Note: the companion repo's `package.json` declares `engines: { "node": ">=22.13.0" }` for `node:sqlite` (the floor is repeated in a comment in `index.js`). It runs on Node v22.23.2 (this workstation) and prints `ExperimentalWarning: SQLite is an experimental feature and might change at any time` on stderr — verified with `cd dev-swarm-training && node -e "import('./index.js').then(m=>console.log(JSON.stringify(m.stats())))"` on 2026-09-27.
 
 Ingest uses the Hugging Face `datasets-server` `/parquet` + `/rows` APIs over `curl` — not `huggingface_hub`.
 
@@ -164,15 +164,15 @@ dev-swarm/
 
 ## Private access (lab)
 
-The public site is GitHub Pages on [o22ugdw213.network](https://o22ugdw213.network). The dashboard and desktop are Cloudflare Tunnel public hostnames; when the tunnel connector is up but the local origin process is down, Cloudflare answers **530** instead of the app. Measured from this workstation on 2026-09-26:
+The public site is [o22ugdw213.network](https://o22ugdw213.network) — GitHub Pages published from the **private** repo `o22ugdw213.network`. Both that repo and the profile repo `022UGDW213` are private: the GitHub API and the web UI return 404 for them, while their SSH remotes clone and push normally. The dashboard and desktop are Cloudflare Tunnel public hostnames; when the tunnel connector is up but the local origin process is down, Cloudflare answers **530** instead of the app. Re-measured from this workstation on 2026-09-27:
 
-| Host | Result |
-|---|---|
-| `o22ugdw213.network/` | HTTP 200 |
-| `o22ugdw213.network/portfolio.html` | HTTP 200 (redirects to `/portfolio`) |
-| `desktop.o22ugdw213.network` | HTTP **530** (no local origin) |
-| `dashboard.o22ugdw213.network/Dashboard` | does not resolve in DNS from here |
-| `ssh.o22ugdw213.network` | resolves (Cloudflare anycast) |
+| Host | Result | Command |
+|---|---|---|
+| `o22ugdw213.network/` | HTTP 200 | `curl -s -o /dev/null -w '%{http_code}' https://o22ugdw213.network/` |
+| `o22ugdw213.network/portfolio.html` | HTTP **307** → `https://o22ugdw213.network/portfolio` (200) | `curl -s -o /dev/null -L -w '%{url_effective} %{http_code}' https://o22ugdw213.network/portfolio.html` |
+| `desktop.o22ugdw213.network` | HTTP **530** (resolves; no reachable origin) | `curl -s -o /dev/null -w '%{http_code}' https://desktop.o22ugdw213.network` |
+| `dashboard.o22ugdw213.network` | no DNS record from here | `getent hosts dashboard.o22ugdw213.network` (empty) |
+| `ssh.o22ugdw213.network` | HTTP **530** (resolves; no reachable origin) | `curl -s -o /dev/null -w '%{http_code}' https://ssh.o22ugdw213.network` |
 
 To publish SSH on the same tunnel:
 
@@ -199,7 +199,7 @@ Do not open port 22. Put Access in front of the dashboard, desktop and SSH; leav
 
 ## How these numbers were measured
 
-All on 2026-09-26, from this repository's working tree unless stated otherwise.
+All on 2026-09-26, from this repository's working tree unless stated otherwise. Rows marked **(2026-09-27)** were re-measured today because the earlier figure did not reproduce.
 
 | Claim | Measured value | Command |
 |---|---|---|
@@ -207,12 +207,20 @@ All on 2026-09-26, from this repository's working tree unless stated otherwise.
 | 30-worker cap | `up -n 31` prints `max 30 workers` and exits 2 (`MAX_WORKERS = 30`) | `python3 swarm.py up -n 31; echo $?` |
 | Stale-claim window | `STALE_AFTER = 180` in `swarm.py` | `grep -n 'STALE_AFTER' dev-swarm/swarm.py` |
 | Queue is SQLite WAL | `PRAGMA journal_mode` → `wal`; tables `tasks`, `workers` | `cd dev-swarm && python3 -c "import sqlite3;c=sqlite3.connect('swarm.db');print(c.execute('PRAGMA journal_mode').fetchone())"` |
-| Live run works | 30 workers up, `#2` done by `devops-23`, `#1` failed exit 127, `down` → 0 workers and `running` → `pending` | transcript above |
-| 38 runbooks | 38 `*.md` in `dev-swarm/skills/` | `ls dev-swarm/skills/*.md \| wc -l` |
+| Live run works | 30 workers up, `#2` done by `devops-23`, `#1` failed exit 127, `down` → 0 workers and `running` → `pending` | transcript above; the per-worker logs in `dev-swarm/logs/` (`devops-23-08764d.log`, `devops-20-4f7e49.log`) record both outcomes. Re-run end-to-end on 2026-09-27: `up -n 2` → `submit shell` → `wait` → `down` → `workers alive: 0` |
+| FTS grounding | `skill_lookup()` returns 3 hits per query against the published index, schema `fts5(agent_id, dataset, text)` | `cd dev-swarm && python3 -c "import swarm;print(len(swarm.skill_lookup('docker build multi-stage image layer caching')))"` with `knowledge/index.db` from `dev-swarm-training` |
+| 38 runbooks | 38 `*.md` in `dev-swarm/skills/` = 30 specialties + 8 extra lanes | `ls dev-swarm/skills/*.md \| wc -l` |
+| Agents + specialty runbooks are generated, not hand-edited | `train/generate.py` reproduces all 30 `agents/*.json` and all 30 specialty runbooks byte-for-byte; the 8 extra-lane runbooks are hand-written and untouched by it | `python3 dev-swarm/train/generate.py` in a scratch copy, then `diff -rq <scratch>/agents dev-swarm/agents` and `diff -rq <scratch>/skills dev-swarm/skills` (both empty) |
 | 3,295 FTS docs | `SELECT count(*) FROM docs` → 3295 | `cd dev-swarm-training && python3 -c "import sqlite3;print(sqlite3.connect('data/index.db').execute('select count(*) from docs').fetchone())"` |
 | Lane breakdown | `stats()` → the object quoted above | `cd dev-swarm-training && node -e "import('./index.js').then(m=>console.log(m.stats()))"` |
-| NVIDIA endpoint live + auth-gated | HTTP 401 without a key | `curl -s -o /dev/null -w '%{http_code}\n' -X POST https://integrate.api.nvidia.com/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"moonshotai/kimi-k3","messages":[{"role":"user","content":"hi"}]}'` |
-| No keys committed | only `nvapi-...` placeholders matched | `grep -rInE 'nvapi-|sk-[A-Za-z0-9]{20}\|AKIA[0-9A-Z]{16}\|ghp_' .` |
+| music-production lane **(2026-09-27)** | 810 docs: 10 + 200 + 200 + 200 + 200 | `python3 dev-swarm/train/ingest_music.py` → `lane music-production: 810 docs` (+ `knowledge/manifest.json`) |
+| muse-code-sdk lane **(2026-09-27)** | 810 docs: 10 repo docs + 5 × 160 HF | `python3 dev-swarm/train/ingest_muse_sdk.py` → `lane muse-code-sdk: 810 docs` |
+| `@muse-code/sdk` npm metadata | latest `1.3.0`, MIT, `engines.node >=20`, zero runtime deps, published 2026-09-18 | `curl -s https://registry.npmjs.org/@muse-code/sdk \| jq -r '."dist-tags".latest, .versions[."dist-tags".latest].license'` |
+| Upstream cookbook recipes | 11 recipe modules (was documented as 12) | `git clone --depth 1 https://github.com/meta-models/muse-code-sdk && ls clients/sdk-cookbook/src/recipes/ \| wc -l` → 11; `grep -c 'from "./recipes/' clients/sdk-cookbook/src/manifest.ts` → 11 |
+| Fable5 trace shape | 120-trace sample: 25.92 messages, 8.59 tool-role messages per trace | `curl -s 'https://datasets-server.huggingface.co/rows?dataset=Swarm-AI-Research%2Ffable5-traces-sft&config=default&split=train&offset=0&length=120'` then average `len(messages)` and the `role == "tool"` count |
+| WCAG contrast of the design tokens | `#eef2ff` on `#040409` 18.30:1 · `#9aa3c7` 8.22:1 · `#ff2ea6` 6.03:1 · `#5b6285` 3.44:1; on the glass fill `#0b0d1b`: 17.27:1 / 7.76:1 | relative-luminance formula (WCAG 2.1) over the token pairs in `dev-swarm/skills/ui-ux-design.md` |
+| NVIDIA endpoint live + auth-gated **(2026-09-27)** | HTTP 401 without a key, body `Header of type 'authorization' was missing` | `curl -s -o /dev/null -w '%{http_code}\n' -X POST https://integrate.api.nvidia.com/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"moonshotai/kimi-k3","messages":[{"role":"user","content":"hi"}]}'` |
+| No keys committed | 7 matches, all `nvapi-...` placeholders | `grep -rInE 'nvapi-\|sk-[A-Za-z0-9]{20}\|AKIA[0-9A-Z]{16}\|ghp_' . \| grep -v '^./.git/'` |
 
 ---
 

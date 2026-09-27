@@ -103,10 +103,14 @@ endpoint — real model turns, nothing leaves the machine.
 - **Tool calls are structured** (glaive): schema first, call second,
   result third — mirror the approval dual-channel rule on your side.
 
-## Cookbook map (12 recipes in `clients/sdk-cookbook/src/recipes/`)
+## Cookbook map (11 recipes in `clients/sdk-cookbook/src/recipes/`)
 
 stream-a-turn, answer-user-input, approve-or-deny (play BOTH arms),
 cancel-mid-turn, classify-serve-exits, fingerprint-mismatch,
 list-models-and-switch-mid-session, queue-steer-reclaim,
 resume-and-verify (two hosts, real failure shape), retry-without-double-submitting,
 survive-the-host-dying. When you need a behavior, copy the recipe's shape first.
+
+Count and names verified 2026-09-27 against the upstream tree:
+`git clone --depth 1 https://github.com/meta-models/muse-code-sdk && ls clients/sdk-cookbook/src/recipes/ | wc -l` → `11`, and
+`grep -c 'from "./recipes/' clients/sdk-cookbook/src/manifest.ts` → `11`.

@@ -23,6 +23,14 @@ user → assistant → assistant → tool → assistant → tool → assistant �
 - Long traces (100+ messages) are normal for coding tasks. Budget context for
   50–150 turns on hard tasks; summarize tool output aggressively.
 
+The averages were re-verified on 2026-09-27 over the exact 120-row sample
+`train/ingest_ml_agents.py` pulls from `Swarm-AI-Research/fable5-traces-sft`
+(the dataset itself holds 4,442 traces; the lane takes the first 120): mean
+`len(messages)` 25.92 → 26, mean tool-role messages 8.59 → 9. Reproduce with
+`curl -s 'https://datasets-server.huggingface.co/rows?dataset=Swarm-AI-Research%2Ffable5-traces-sft&config=default&split=train&offset=0&length=100'`
+(`offset=100&length=20` for the rest), then average `len(messages)` and the
+count of messages with `role == "tool"`.
+
 ## Agent roles (from 100 CrewAI profiles)
 
 Give each worker a **role card**: goal + backstory + expertise. Example shape:

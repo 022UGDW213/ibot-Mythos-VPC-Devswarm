@@ -18,7 +18,7 @@ your defaults. Counts below were tallied on 2026-09-26 from
 | `lora_alpha_effective` | 16 (27), 32 (8), 128 (6), 64 (3), 512 (2), 256 (1), NR (3) | **32 with rank 16** |
 | `lora_dropout` | 0.05 (27), 0.0 (10), 0.1 (2), NR (11) | **0.05** |
 | `learning_rate` | 2e-4 (34), 1e-4 (9), 1e-5 (2), others (4) | **2e-4** |
-| `num_epochs` | 1 (18), 2 (11), 4 (10), 3 (7), 5 (3) | **3** |
+| `num_epochs` | 1 (18), 2 (11), 4 (10), 3 (7), 5 (3), NR (1) | **3** |
 | `seq_len` | 2048 (18), 4096 (12), 512 (5), 1024 (5), 8192 (2), others (4), NR (4) | **4096** if VRAM allows |
 | `gradient_checkpointing` | `true` (31), `false` (1), other (2), NR (16) | **on** |
 | `base_precision` | full (22), 4bit (20), 8bit (5), awq-4bit / gptq-4bit / aqlm-2bit (1 each) | **4-bit QLoRA** on consumer GPUs |

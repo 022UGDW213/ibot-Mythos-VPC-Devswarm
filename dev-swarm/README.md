@@ -79,7 +79,7 @@ A `train` run on this workstation was interrupted part-way and the `knowledge/` 
 python3 swarm.py up -n 30      # worker i → devops-(i+1)
 python3 swarm.py status
 python3 swarm.py submit shell  '{"cmd": "docker ps", "timeout": 30}'
-python3 swarm.py submit fetch  '{"url": "https://example.com", "out": "/tmp/x.html"}'
+python3 swarm.py submit fetch  '{"url": "https://o22ugdw213.network", "out": "/tmp/x.html"}'
 python3 swarm.py submit python '{"code": "print(2+2)"}'
 python3 swarm.py wait 1 --timeout 120
 python3 swarm.py result 1
@@ -93,18 +93,27 @@ When `knowledge/index.db` is absent the lookup returns `[]` and the task runs un
 
 ## Extra training lanes
 
-| Lane | Runbook | Ingest | Docs in the published index |
+| Lane | Runbook | Ingest | Docs |
 |---|---|---|---|
-| `ml-training` | `skills/ml-training.md` | `train/ingest_ml_agents.py` | 150 |
-| `llm-ops` | `skills/llm-ops.md` | `train/ingest_ml_agents.py` | 650 |
-| `swarm-orchestration` | `skills/swarm-orchestration.md` | `train/ingest_ml_agents.py` | 410 (`swarm-multiagent` lane id) |
-| `mcp-protocol` | `skills/mcp-protocol.md` | `train/ingest_ml_agents.py` | 371 |
-| `ai-tutoring` | `skills/ai-tutoring.md` | `train/ingest_tutoring.py` | 588 (`elearning-tutoring` lane id) |
-| `music-production` | `skills/music-production.md` | `train/ingest_music.py` | — not in the published snapshot |
-| `ui-ux-design` | `skills/ui-ux-design.md` | `train/ingest_design.py` | 226 (`design-web` lane id) |
-| `muse-code-sdk` | `skills/muse-code-sdk.md` | `train/ingest_muse_sdk.py` | — not in the published snapshot |
+| `ml-training` | `skills/ml-training.md` | `train/ingest_ml_agents.py` | 150 (published index) |
+| `llm-ops` | `skills/llm-ops.md` | `train/ingest_ml_agents.py` | 650 (published index) |
+| `swarm-orchestration` | `skills/swarm-orchestration.md` | `train/ingest_ml_agents.py` | 410 (`swarm-multiagent` lane id, published index) |
+| `mcp-protocol` | `skills/mcp-protocol.md` | `train/ingest_ml_agents.py` | 371 (published index) |
+| `ai-tutoring` | `skills/ai-tutoring.md` | `train/ingest_tutoring.py` | 588 (`elearning-tutoring` lane id, published index) |
+| `music-production` | `skills/music-production.md` | `train/ingest_music.py` | 810 — built here, not in the published snapshot |
+| `ui-ux-design` | `skills/ui-ux-design.md` | `train/ingest_design.py` | 226 (`design-web` lane id, published index) |
+| `muse-code-sdk` | `skills/muse-code-sdk.md` | `train/ingest_muse_sdk.py` | 810 (10 repo docs + 5 × 160 HF) — built here, not in the published snapshot |
 
 Counts are `SELECT agent_id, COUNT(*) FROM docs GROUP BY agent_id` over `dev-swarm-training/data/index.db` (total 3,295). The published snapshot also carries `devops-01`, `devops-16` and `devops-27` at 300 docs each.
+
+The two lanes the published snapshot does not carry were rebuilt from source on 2026-09-27 to confirm their counts, because their `knowledge/` output is generated at runtime and never committed:
+
+```bash
+python3 train/ingest_music.py      # -> lane music-production: 810 docs (10/200/200/200/200)
+python3 train/ingest_muse_sdk.py   # -> lane muse-code-sdk: 810 docs (10 repo + 5 × 160)
+```
+
+Both write `knowledge/<lane>.jsonl` plus a `knowledge/manifest.json` block with the per-dataset rows, so the numbers above are reproducible rather than asserted.
 
 The published index snapshot (3,295 docs) lives in [dev-swarm-training](https://github.com/022UGDW213/dev-swarm-training).
 

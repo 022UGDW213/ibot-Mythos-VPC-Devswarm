@@ -12,23 +12,29 @@ Endpoint: `https://integrate.api.nvidia.com/v1/chat/completions`
   Example vision input (still live, HTTP 200 `image/jpeg` 183,601 bytes):
   `https://assets.ngc.nvidia.com/products/api-catalog/phi-3-5-vision/example1b.jpg`
 
-This is a dated observation, not a current result. Re-checked on 2026-09-26 from
+This is a dated observation, not a current result. Re-checked on 2026-09-27 from
 this workstation: `NVIDIA_API_KEY` was **not set**, so the completion could not
 be replayed. The endpoint itself is live and enforces auth — an unauthenticated
 `POST` returns:
 
 ```text
-HTTP 401 — "Header of type `authorization` was missing"   (0.31 s)
+HTTP 401 — "Header of type `authorization` was missing"
 ```
 
+The status and body are stable; the wall time is not (0.31 s on 2026-09-26,
+0.68 s on 2026-09-27), so it is not quoted as a benchmark.
+
 The model id and the free-tier status therefore remain **unverified as of
-2026-09-26**; re-run `nvidia/client_example.py` with a key to confirm them.
+2026-09-27**; re-run `nvidia/client_example.py` with a key to confirm them.
 
 ## Referenced in local config (not live-tested here)
 
 - **`nvidia/nemotron-3-ultra-550b-a55b`** — present in the iBot stack config at
-  `cluster-config/nvidia-nemotron-config.json` (fields `name` and
-  `model_name`, verified 2026-09-26); that config expects `NVIDIA_API_KEY`.
+  `cluster-config/nvidia-nemotron-config.json` as
+  `model.name` and `model.parameters.model_name` (both hold that exact string;
+  verified 2026-09-27 with
+  `python3 -c "import json;d=json.load(open('cluster-config/nvidia-nemotron-config.json'));print(d['model']['name'], d['model']['parameters']['model_name'])"`);
+  the config's `model.parameters.api_key_env_var` is `NVIDIA_API_KEY`.
 
 ## Auth
 

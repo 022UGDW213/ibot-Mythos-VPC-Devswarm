@@ -1,7 +1,12 @@
 # Music Production Skill
 
 Runbook for composing and producing electronic tracks. Grounded in 810 HF docs
-across 5 datasets, FTS-queryable from the shared index (`agent_id = 'music-production'`):
+across 5 datasets, FTS-queryable from the shared index (`agent_id = 'music-production'`).
+This lane is **not** part of the published `dev-swarm-training` snapshot —
+regenerate it here with `python3 dev-swarm/train/ingest_music.py` (prints
+`lane music-production: 810 docs` and writes the per-dataset counts to
+`dev-swarm/knowledge/manifest.json`). The 10/200/200/200/200 split and the
+techno/trance counts below were re-verified that way on 2026-09-27.
 
 | Dataset | Docs | What it contributes |
 |---|---|---|
@@ -10,6 +15,15 @@ across 5 datasets, FTS-queryable from the shared index (`agent_id = 'music-produ
 | `Musictheory94/Chordonomicon` | 200 | Chord sequences tagged per song section (`<intro_1>`, `<verse_1>`, `<chorus_1>`, …) with main genre / decade |
 | `pacoreyes/electronic-music-wikipedia-rag` | 200 | Artist/genre encyclopedia chunks: title + tags + article lead (techno 45 docs, trance 34, trip-hop/downtempo well covered) |
 | `m-a-p/MusicTheoryBench` | 200 | Theory Q/A with explanations: chords, scales, intervals, key signatures (plus some instrument/pedagogy rows) |
+
+Keyword counts over the generated lane (2026-09-27) — prints `200 45 34`:
+
+```bash
+python3 -c "import json;
+d=[json.loads(l) for l in open('dev-swarm/knowledge/music-production.jsonl')];
+w=[x for x in d if x['dataset'].endswith('electronic-music-wikipedia-rag')];
+print(len(w), sum('techno' in x['text'].lower() for x in w), sum('trance' in x['text'].lower() for x in w))"
+```
 
 Index queries: `SELECT text FROM docs WHERE agent_id='music-production' AND docs MATCH '<terms>'`.
 
@@ -96,9 +110,10 @@ fastest path from idea to a finished arrangement.
   template step 6) are exactly this; cycle chord tones, octave-displace the
   top note for movement.
 - Watch out: MusicTheoryBench `test` rows mix real theory (chords, scales,
-  intervals — ~30 docs) with pedagogy/instrument-care rows; trust the
+  intervals) with pedagogy/instrument-care rows; trust the
   Chordonomicon progressions for compositional choices, the Bench for
-  terminology checks.
+  terminology checks. The split itself was not counted row by row, so no
+  theory/pedagogy ratio is quoted here.
 
 ## Mixing / mastering basics (from the 200 producer Q docs)
 
@@ -107,9 +122,12 @@ fastest path from idea to a finished arrangement.
   reduction — the single most-asked technique in the corpus. If the low end is
   muddy, sidechain first, EQ second.
 - **Stereo width vs mono sub**: keep everything below ~120 Hz mono (kick, sub
-  bass). Width lives in the mids/highs: hats, stabs, pads, reverbs. 98 corpus
-  docs discuss mono/sub handling — collapsing the sub to mono is the consensus
-  fix for weak low end on club systems.
+  bass). Width lives in the mids/highs: hats, stabs, pads, reverbs. Mono/sub
+  handling recurs across the producer-question docs — collapsing the sub to mono
+  is the consensus fix for weak low end on club systems. (Do not count the
+  matches: every one of the 200 `Audio-Video-Engineering-Agentic-Tasks-1M` docs
+  ends with the same fixed context line, so any keyword count over that dataset
+  measures the ingest template, not the corpus.)
 - **EQ carving**: the recurring complaint is harshness around **2 kHz**
   (snares, leads). Cut 2–3 dB with a medium Q on the offending element rather
   than boosting elsewhere; high-pass non-bass elements to clear mud.

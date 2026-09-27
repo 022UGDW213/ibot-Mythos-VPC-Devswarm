@@ -215,7 +215,7 @@ REPO_DOCS = [
 
     ("cookbook-map",
      "MUSE CODE SDK — COOKBOOK RECIPE MAP (clients/sdk-cookbook/src/recipes/)\n"
-     "12 executable recipes, each self-documenting with a module header:\n"
+     "11 executable recipes, each self-documenting with a module header:\n"
      "stream-a-turn — append item/delta keyed by itemId; trust only "
      "item/completed and turn/completed.\n"
      "answer-user-input — the userInput dual-channel + pendingRequests.\n"
