@@ -4,7 +4,7 @@ Thirty specialist workers. One SQLite queue. Atomic claims. Visible results.
 
 DevSwarm is a DevOps agent fleet for the [timeloops](https://o22ugdw213.network) lab — a coordinator plus up to 30 detached workers that pull scoped work from `swarm.db`, ground each task in a Hugging Face–trained FTS index, and write the outcome back where you can inspect it.
 
-[Live showcase](https://o22ugdw213.network/#devswarm) · [Training corpus](https://github.com/022UGDW213/dev-swarm-training) · [Work](https://o22ugdw213.network/portfolio.html)
+[Live showcase](https://o22ugdw213.network/#devswarm) · [Training corpus](https://github.com/022UGDW213/dev-swarm-training) · [Work](https://o22ugdw213.network/portfolio)
 
 | | |
 |---|---|
